@@ -97,46 +97,11 @@
         if (!response.ok)
             return response.status
         else {
-            // let json = await response.json();
-            // console.log(json)
             return await response.json() // response.json
         }
     }
-
-
-        // document.querySelector("#btnUpdate").addEventListener("click", () =>{
-        //     let model = document.querySelector("#model").value;
-        //     let rok = document.querySelector("#rok").value;
-        //     console.log(model)
-        //     console.log(rok)
-        //     console.log(elemId)
-        //     const data = JSON.stringify({
-        //         uuid: elemId,
-        //         model: model,
-        //         rok: rok,
-        //     })
-        //     const options = {
-        //         method: "POST",
-        //         body: data
-        //     }
-        //     console.log("update")
-        //     fetch("/update", options)
-        //         .then(response => response.text())
-        //         .then(data =>{
-        //                 console.log(data);
-        //                 getData();
-        //             }
-        //         )
-        // });
-
-
-
-
-
     const generateInvoice = (obj) => {
-        // let model = document.querySelector("#model").value;
-        // let rok = document.querySelector("#rok").value;
-        // console.log(model)
+
         console.log(obj)
         const data = JSON.stringify({
             ...obj

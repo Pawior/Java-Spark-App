@@ -67,9 +67,6 @@
             const options = {
                 method: "POST",
                 body: data,
-                // Headers: {
-                //     "Content-Type": "application/json"
-                // }
             };
 
             let response = await fetch("/add", options)
@@ -79,7 +76,6 @@
                 return await response.json() // response.json
 
         }
-        // document.querySelector("#btnAdd").addEventListener("click", fetchPostAsync)
         document.getElementById("btnAdd").onclick = async () => {
             let json = await fetchPostAsync()
             console.log(json)

@@ -83,9 +83,7 @@
             if (!response.ok)
                 return response.status
             else {
-                // let json = await response.json();
-                // console.log(json)
-                return await response.json() // response.json
+                return await response.json()
             }
         }
 
@@ -212,40 +210,7 @@
                 table.appendChild(tr);
             })
         }
-        // window.onload = async () => {
-        //     let json = await fetchPostAsync()
-        //     console.log(json)
-        //     let table = document.querySelector("#table")
-        //     json.forEach( (obj, arrIdx) => {
-        //         let tr = document.createElement("tr")
-        //         let elementId;
-        //         let tdIdx = document.createElement("td")
-        //         tdIdx.innerHTML = arrIdx
-        //         tr.appendChild(tdIdx)
-        //         for (let [key, value] of Object.entries(obj)) {
-        //             if ( key=="uuid"){
-        //                 elementId = value;
-        //             }
-        //             let td = document.createElement("td")
-        //             if ( typeof(value) == "object"){
-        //                 value = JSON.stringify(value, 5, null)
-        //             }
-        //             td.innerHTML = `${value}`;
-        //             tr.appendChild(td)
-        //         }
-        //         let td2 = document.createElement("td")
-        //         td2.innerHTML = `<button onclick="deleteFetch('${elementId}')" id="deleteBtn${elementId}"> Usun </button>`;
-        //
-        //         let tdEdit = document.createElement("td")
-        //         tdEdit.innerHTML = `<button onclick="editFunc('${elementId}')" id="editBtn${elementId}"> Edit </button>`
-        //
-        //
-        //         tr.append(td2)
-        //         tr.append(tdEdit)
-        //         tr.setAttribute('id', elementId);
-        //         table.appendChild(tr);
-        //     })
-        // }
+
         window.onload = getData();
     </script>
 </body>
