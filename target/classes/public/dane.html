@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            font-family: sans-serif;
+        }
+        td,tr{
+            border: 1px solid black;
+            height: 64px;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1> Dane</h1>
+    <table id="table">
+    </table>
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Podaj nowe dane</p>
+            <label> model: <input type="text" id="model"></label>
+            <label> rok:
+                <select name="rok" id="rok">
+                    <option value="2001"> 2001</option>
+                    <option value="2002"> 2002</option>
+                    <option value="2003"> 2003</option>
+                    <option value="2004"> 2004</option>
+                </select>
+            </label>
+            <button id="btnUpdate"> Update</button>
+        </div>
+
+    </div>
+    <script>
+        fetchPostAsync = async () => {
+
+            const options = {
+                method: "POST",
+                body: "",
+            };
+
+            let response = await fetch("/post", options)
+
+            if (!response.ok)
+                return response.status
+            else {
+                // let json = await response.json();
+                // console.log(json)
+                return await response.json() // response.json
+            }
+        }
+
+        const deleteFetch = (elemId) => {
+            alert(
+                document.createElement("div")
+            )
+            const options = {
+                method: "POST",
+                body: elemId
+            }
+            fetch("/delete", options)
+                .then(response => response.text())
+                .then(data =>{
+                        console.log(data);
+                        getData();
+                    }
+                )
+
+        }
+        const updateFetch = (elemId) => {
+            var modal = document.getElementById("myModal");
+            var btn = document.getElementById("myBtn");
+            var span = document.getElementsByClassName("close")[0];
+
+            modal.style.display = "block";
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            document.querySelector("#btnUpdate").addEventListener("click", () =>{
+                let model = document.querySelector("#model").value;
+                let rok = document.querySelector("#rok").value;
+                console.log(model)
+                console.log(rok)
+                console.log(elemId)
+                const data = JSON.stringify({
+                    uuid: elemId,
+                    model: model,
+                    rok: rok,
+                })
+                const options = {
+                    method: "POST",
+                    body: data
+                }
+                console.log("update")
+                fetch("/update", options)
+                    .then(response => response.text())
+                    .then(data =>{
+                            console.log(data);
+                            getData();
+                        }
+                    )
+            })
+
+
+
+        }
+
+        const generateInvoice = (elemId) => {
+            const data = JSON.stringify({
+                uuid: elemId
+            })
+            const options = {
+                method: "POST",
+                body: data
+            }
+            fetch("/generate", options)
+                .then(response => response.text())
+                .then(data =>{
+                        console.log(data);
+
+                    }
+                )
+        }
+
+        async function getData(){
+            let json = await fetchPostAsync()
+            console.log(json)
+            let table = document.querySelector("#table")
+            table.innerHTML = ""
+            json.forEach( (obj, arrIdx) => {
+                let tr = document.createElement("tr")
+                let elementId;
+                let tdIdx = document.createElement("td")
+                tdIdx.innerHTML = arrIdx
+                tr.appendChild(tdIdx)
+                for (let [key, value] of Object.entries(obj)) {
+                    if ( key=="uuid"){
+                        elementId = value;
+                    }
+                    let td = document.createElement("td")
+                    if ( typeof(value) == "object"){
+                        value = JSON.stringify(value, 5, null)
+                    }
+                    if ( key == "color"){
+                        td.style.background = `${value}`
+                        td.style.height = `60px`
+                        td.style.width = `60px`
+                    }else {
+                        td.innerHTML = `${value}`;
+                    }
+                    tr.appendChild(td)
+                }
+                let td2 = document.createElement("td")
+                td2.innerHTML = `<button onclick="deleteFetch('${elementId}')" id="deleteBtn${elementId}"> Usun </button>`;
+
+                let tdEdit = document.createElement("td")
+                tdEdit.innerHTML = `<button onclick="updateFetch('${elementId}')" id="editBtn${elementId}"> Edit </button>`
+
+                let tdInvoice = document.createElement("td")
+                tdInvoice.innerHTML = `<button onclick="generateInvoice('${elementId}')" id="generateInvoice${elementId}"> GenerateInvoice </button>`
+
+
+                tr.append(td2)
+                tr.append(tdEdit)
+                tr.append(tdInvoice)
+                tr.setAttribute('id', elementId);
+                table.appendChild(tr);
+            })
+        }
+        // window.onload = async () => {
+        //     let json = await fetchPostAsync()
+        //     console.log(json)
+        //     let table = document.querySelector("#table")
+        //     json.forEach( (obj, arrIdx) => {
+        //         let tr = document.createElement("tr")
+        //         let elementId;
+        //         let tdIdx = document.createElement("td")
+        //         tdIdx.innerHTML = arrIdx
+        //         tr.appendChild(tdIdx)
+        //         for (let [key, value] of Object.entries(obj)) {
+        //             if ( key=="uuid"){
+        //                 elementId = value;
+        //             }
+        //             let td = document.createElement("td")
+        //             if ( typeof(value) == "object"){
+        //                 value = JSON.stringify(value, 5, null)
+        //             }
+        //             td.innerHTML = `${value}`;
+        //             tr.appendChild(td)
+        //         }
+        //         let td2 = document.createElement("td")
+        //         td2.innerHTML = `<button onclick="deleteFetch('${elementId}')" id="deleteBtn${elementId}"> Usun </button>`;
+        //
+        //         let tdEdit = document.createElement("td")
+        //         tdEdit.innerHTML = `<button onclick="editFunc('${elementId}')" id="editBtn${elementId}"> Edit </button>`
+        //
+        //
+        //         tr.append(td2)
+        //         tr.append(tdEdit)
+        //         tr.setAttribute('id', elementId);
+        //         table.appendChild(tr);
+        //     })
+        // }
+        window.onload = getData();
+    </script>
+</body>
+</html>

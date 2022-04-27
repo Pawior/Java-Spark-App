@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            font-family: sans-serif;
+        }
+        td,tr{
+            border: 1px solid black;
+            height: 64px;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .tdDownloadClass{
+            position: relative;
+            height: 64px;
+            width: 64px;
+        }
+        .downloadClass{
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+<h1> Dane</h1>
+<button id="btnGenerate"> Generują losowo bazę</button>
+<table id="table">
+</table>
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>Some text in the Modal..</p>
+        <label> model: <input type="text" id="model"></label>
+        <label> rok:
+            <select name="rok" id="rok">
+                <option value="2001"> 2001</option>
+                <option value="2002"> 2002</option>
+                <option value="2003"> 2003</option>
+                <option value="2004"> 2004</option>
+            </select>
+        </label>
+        <button id="btnUpdate"> Update</button>
+    </div>
+
+</div>
+<script>
+    fetchPostAsync = async () => {
+
+        const options = {
+            method: "POST",
+            body: "",
+        };
+
+        let response = await fetch("/post", options)
+
+        if (!response.ok)
+            return response.status
+        else {
+            // let json = await response.json();
+            // console.log(json)
+            return await response.json() // response.json
+        }
+    }
+
+
+        // document.querySelector("#btnUpdate").addEventListener("click", () =>{
+        //     let model = document.querySelector("#model").value;
+        //     let rok = document.querySelector("#rok").value;
+        //     console.log(model)
+        //     console.log(rok)
+        //     console.log(elemId)
+        //     const data = JSON.stringify({
+        //         uuid: elemId,
+        //         model: model,
+        //         rok: rok,
+        //     })
+        //     const options = {
+        //         method: "POST",
+        //         body: data
+        //     }
+        //     console.log("update")
+        //     fetch("/update", options)
+        //         .then(response => response.text())
+        //         .then(data =>{
+        //                 console.log(data);
+        //                 getData();
+        //             }
+        //         )
+        // });
+
+
+
+
+
+    const generateInvoice = (obj) => {
+        // let model = document.querySelector("#model").value;
+        // let rok = document.querySelector("#rok").value;
+        // console.log(model)
+        console.log(obj)
+        const data = JSON.stringify({
+            ...obj
+        })
+        const options = {
+            method: "POST",
+            body: data
+        }
+        fetch("/generate", options)
+            .then(response => response.text())
+            .then(data =>{
+                console.log(data);
+                document.querySelector(`#tdDownload${obj.uuid}`).style.display = "block"
+
+                }
+            )
+    }
+
+
+    async function getData(){
+        let json = await fetchPostAsync()
+        console.log(json)
+        let table = document.querySelector("#table")
+        table.innerHTML = ""
+        json.forEach( (obj, arrIdx) => {
+            let tr = document.createElement("tr")
+            let elementId;
+            let tdIdx = document.createElement("td")
+            tdIdx.innerHTML = arrIdx
+            tr.appendChild(tdIdx)
+            for (let [key, value] of Object.entries(obj)) {
+                if ( key=="uuid"){
+                    elementId = value;
+                }
+                let td = document.createElement("td")
+                if ( typeof(value) == "object"){
+                    value = JSON.stringify(value, 5, null)
+                }
+                if ( key == "color"){
+                    td.style.background = `${value}`
+                    td.style.height = `60px`
+                    td.style.width = `60px`
+                }else {
+                    td.innerHTML = `${value}`;
+                }
+                tr.appendChild(td)
+            }
+
+            let tdInvoice = document.createElement("td")
+            tdInvoice.innerHTML = `<button id="generateInvoice${elementId}"> Generate Invoice </button>`
+            tdInvoice.onclick=() => {generateInvoice(obj)}
+            let tdDownload = document.createElement("td")
+            tdDownload.id = `tdDownload${elementId}`
+            tdDownload.innerHTML = `<a class="downloadClass" href="/download/?id=${elementId}"> Pobierz PDF</a>`
+            tdDownload.style.display = "none"
+            // tdDownload.innerHTML = `<button onclick="downloadInvoice('${elementId}')" id="downloadInvoice${elementId}"> Download Invoice </button>`
+            tdDownload.classList.add("tdDownloadClass")
+
+            tr.append(tdInvoice)
+            tr.append(tdDownload)
+            tr.setAttribute('id', elementId);
+            table.appendChild(tr);
+        })
+    }
+
+
+    const generateData = async () => {
+        for ( let i =0 ; i<10; i++){
+            const model = genString(6);
+            const color = genColor()
+            const year = genYear();
+
+            const poduszki = [
+                {poduszka: "kierowca", ma: generateTrueFalse()},
+                {poduszka: "pasazer", ma: generateTrueFalse()},
+                {poduszka: "tyl", ma: generateTrueFalse()},
+                {poduszka: "boki", ma: generateTrueFalse()},
+            ]
+
+
+            const body = {model, "rok": year, color, poduszkiArr: poduszki}
+
+            const res = await fetch("/add", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            })
+            const resData = await res.json()
+            await getData()
+            console.log(resData)
+
+        }
+    }
+
+    const btnGenerate = document.querySelector("#btnGenerate")
+    btnGenerate.addEventListener("click", generateData)
+
+    function genString(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+    function genColor(){
+        return '#' + Math.random().toString(16).substr(-6);
+    }
+    function genYear(){
+        return Math.floor(Math.random()*20) + 2000
+    }
+    function generateTrueFalse(){
+        return Math.random() < 0.5;
+
+    }
+
+    window.onload = getData();
+</script>
+</body>
+</html>

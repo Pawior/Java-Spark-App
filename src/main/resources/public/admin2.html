@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        tr, td {
+            border: 1px solid black;
+        }
+
+        #body {
+            position: relative;
+        }
+
+    </style>
+</head>
+<body id="body">
+<h1>Admin</h1>
+<a href="/cars.html">cars panel</a>
+<table id="table"></table>
+
+<script>
+    const fetchForCars = async () => {
+        const res = await fetch("/get", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        const resData = await res.json();
+        console.log(resData)
+        let incrementer = 0;
+        // ostatnie to: generowanie
+        createRow(0, "Kolor", "model", "Rok", [{type: "typ poduszki", exists: "istnieje?"}], null, true, false)
+        resData.forEach((car) => {
+            console.log(car)
+            createRow(incrementer, car.color, car.model, car.year, car.airbags, car._id, false, car.fax)
+            incrementer++
+        })
+
+    }
+
+    function createRow (incrementer, color, model, year, airbags, id, generating, fax) {
+        const tr = document.createElement("tr")
+        const incrementerD = document.createElement("td")
+        incrementerD.innerText = incrementer
+        const colorD = document.createElement("td")
+
+        colorD.innerText = color
+        colorD.style.backgroundColor = color
+        const modelD = document.createElement("td")
+        modelD.innerText = model
+        const yearD = document.createElement("td")
+        yearD.innerText = year
+        const airbagsD = document.createElement("td")
+        console.log(airbags)
+        airbags.forEach((airbag) => {
+            airbagsD.innerHTML += airbag.type + ": " + airbag.exists + "<br/>"
+        })
+        //generowanie
+        const gen = document.createElement("td")
+        if (generating) {
+            const genBut = document.createElement("button")
+            genBut.innerText = "generuj losowo"
+            genBut.onclick = () => addData()
+
+            gen.appendChild(genBut)
+
+        } else {
+            const faxButton = document.createElement("button")
+            faxButton.innerText = "generuj fakturę VAT"
+            faxButton.value = id
+            faxButton.onclick = (e) => genFax(e.target.value)
+            gen.appendChild(faxButton)
+
+
+        }
+
+
+        tr.appendChild(incrementerD)
+        tr.appendChild(colorD)
+        tr.appendChild(modelD)
+        tr.appendChild(yearD)
+        tr.appendChild(airbagsD)
+        tr.appendChild(gen)
+
+        const gFaxTd = document.createElement("td")
+        if (fax) {
+            // const gFaxButton = document.createElement("button")
+            // gFaxButton.innerText = "pobierz fakturę"
+            // gFaxButton.value = id
+            // gFaxButton.onclick = (e) => downloadFax(e.target.value)
+            // gFaxTd.appendChild(gFaxButton)
+            // console.log(gFaxTd)
+            const link = document.createElement("a")
+            link.setAttribute("href", "/getFax?id=" + id)
+            link.innerText = "pobierz fakturę"
+            gFaxTd.appendChild(link)
+        }
+        tr.appendChild(gFaxTd)
+        // tr.appendChild(updateD)
+        document.getElementById("table").appendChild(tr)
+
+
+    }
+    // dodaje wpis
+    const addData = async () => {
+        for (let i = 0; i < 10; i++) {
+            const model = generateString(8);
+            const color = generateColor()
+            const year = generateYear();
+
+
+            const poduszki = [
+
+                {
+                    type: "poduszka kierowcy",
+                    exists: generateTrueFalse()
+                },
+                {
+                    type: "poduszka pasażera",
+                    exists: generateTrueFalse()
+                },
+                {
+                    type: "poduszka tylna kanapa",
+                    exists: generateTrueFalse()
+                },
+                {
+                    type: "poduszka boczne z tyłu",
+                    exists: generateTrueFalse()
+                }
+
+            ]
+            // const body = { model, year, color, "poduszki": poduszki }
+            const body = {model, "year": +year, color, airbags: poduszki}
+            console.log(body)
+            try {
+                const res = await fetch("/add", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(body)
+                })
+                const resData = await res.json()
+                console.log(resData)
+                if (resData.err) {
+                    return
+                }
+                // alert(JSON.stringify(resData, null, 5))
+                // console.log("fetch 2")
+                // const res2 = await fetch("/get", {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json"
+                //     }
+                // })
+                // const res2Data = await res2.json();
+                // console.log(res2Data)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        window.location.reload()
+    }
+
+    function generateString(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        for ( let i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+
+    function generateColor() {
+        let color = "#"
+        for (let i = 0; i < 6; i++) {
+            let number = Math.floor(Math.random() * 15)
+            switch (number) {
+                case 10:
+                    number = "a"
+                    break
+                case 11:
+                    number = "b"
+                    break
+                case 12:
+                    number = "c"
+                    break
+                case 13:
+                    number = "d"
+                    break
+                case 14:
+                    number = "e"
+                    break
+                case 15:
+                    number = "f"
+                    break
+                default:
+                    break
+            }
+            color += number + ""
+        }
+        return color
+    }
+
+    function generateYear() {
+        return Math.floor(Math.random()*22) + 2000
+    }
+
+    function generateTrueFalse() {
+        const i = Math.random()
+        if (i < 0.5) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    const genFax = async (carId) => {
+        console.log(carId)
+        try {
+            const res = await fetch("/genFax", {
+                method: "POST",
+                body: JSON.stringify({id: carId}),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            // console.log(res)
+            window.location.reload()
+        } catch(err) {
+            console.log(err)
+        }
+    }
+
+    // const downloadFax = async (carId) => {
+    //     console.log(carId)
+    //     try {
+    //         const res = await fetch("/getFax?id="+carId, {
+    //             method: "GET",
+    //             // body: JSON.stringify({id: carId}),
+    //             // headers: {
+    //             //     "Content-Type": "application/json"
+    //             // }
+    //         })
+    //     } catch (err) {
+    //         console.log(err)
+    //     }
+    // }
+
+
+    window.onload = () => {
+        fetchForCars()
+    }
+
+
+</script>
+</body>
+</html>

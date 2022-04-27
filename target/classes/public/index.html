@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <label> model: <input type="text" id="model"></label>
+        <label> rok:
+            <select name="rok" id="rok">
+                <option value="2001"> 2001</option>
+                <option value="2002"> 2002</option>
+                <option value="2003"> 2003</option>
+                <option value="2004"> 2004</option>
+            </select>
+        </label>
+        <label> poduszki powietrzne: kierowca|pasazer| tylna kanapa | boki
+            <input type="checkbox" id="airBag1" name="airBag1" value="">
+            <input type="checkbox" id="airBag2" name="airBag2" value="">
+            <input type="checkbox" id="airBag3" name="airBag3" value="">
+            <input type="checkbox" id="airBag4" name="airBag4" value="">
+        </label>
+        <label> Kolor: <input type="color" id="kolor" name="kolor" value="#e66465"></label>
+        <button id="btnAdd"> Dodaj</button>
+        <a href="/dane"> Strona z danymi</a>
+        <a href="/admin"> Strona admina</a>
+    </div>
+    <script>
+        fetchPostAsync = async () => {
+            let model = document.querySelector("#model").value;
+            let rok = document.querySelector("#rok").value;
+            let color = document.querySelector("#kolor").value;
+            let airBag1 = document.querySelector("#airBag1").checked;
+            let airBag2 = document.querySelector("#airBag2").checked;
+            let airBag3 = document.querySelector("#airBag3").checked;
+            let airBag4 = document.querySelector("#airBag4").checked;
+            const data = JSON.stringify({
+                model: model,
+                rok: rok,
+                color: color,
+                poduszkiArr: [
+                    {poduszka: "kierowca", ma: airBag1},
+                    {poduszka: "pasazer", ma: airBag2},
+                    {poduszka: "tyl", ma: airBag3},
+                    {poduszka: "boki", ma: airBag4},
+                ]
+            })
+
+            const options = {
+                method: "POST",
+                body: data,
+                // Headers: {
+                //     "Content-Type": "application/json"
+                // }
+            };
+
+            let response = await fetch("/add", options)
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+        // document.querySelector("#btnAdd").addEventListener("click", fetchPostAsync)
+        document.getElementById("btnAdd").onclick = async () => {
+            let json = await fetchPostAsync()
+            console.log(json)
+            alert(JSON.stringify(json,null, 5 ))
+        }
+    </script>
+</body>
+
+</html>
